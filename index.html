@@ -93,23 +93,23 @@
             flex-grow: 1;
         }
 
-        /* Full-width dropdown box below the chart structure */
         .explanation-panel {
             width: 100%;
             max-width: 1200px;
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
+            transition: max-height 0.3s ease-out, border-color 0.3s ease-out; /* Added border transition */
             background-color: #ffffff;
             border-radius: 8px;
-            border: 1px solid transparent;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            /* Removed transparent border and box-shadow from here */
         }
-
+        
         .explanation-panel.open {
             border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); /* Moved shadow here */
             margin-top: 15px;
         }
+
 
         .explanation-content {
             padding: 24px;
