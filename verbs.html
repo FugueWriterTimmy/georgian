@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Georgian Verb</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --border-color: #cbd5e1;
+            --primary-color: #c93b2b;
+            --text-color: #1e293b;
+            --active-bg: #fee2e2;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        /* Container allowing horizontal scrolling on smaller viewports */
+        .chart-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            overflow-x: auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        /* Main horizontal slot chart layout */
+        .slots-chart {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(100px, 1fr));
+            width: 100%;
+            min-width: 1000px; /* Ensures chart maintains its look on mobile */
+        }
+
+        .slot-column {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .slot-column:last-child {
+            border-right: none;
+        }
+
+        .slot-column:hover {
+            background-color: #f1f5f9;
+        }
+
+        .slot-column.active {
+            background-color: var(--active-bg);
+        }
+
+        /* Number indexing row (-3 to 8) */
+        .slot-index {
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            color: #64748b;
+        }
+
+        /* Title text row */
+        .slot-name {
+            padding: 15px 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1.3;
+            flex-grow: 1;
+        }
+
+        /* Full-width dropdown box below the chart structure */
+        .explanation-panel {
+            width: 100%;
+            max-width: 1200px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .explanation-panel.open {
+            border: 1px solid var(--border-color);
+            margin-top: 15px;
+        }
+
+        .explanation-content {
+            padding: 24px;
+        }
+
+        .explanation-content h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .explanation-text {
+            color: #475569;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The Georgian Verb</h1>
+        <p>Click any slot cell in the chart to learn about its usage</p>
+    </header>
+
+    <!-- The Horizontal Grid Layout -->
+    <div class="chart-wrapper">
+        <div class="slots-chart" id="slotsChart"></div>
+    </div>
+
+    <!-- Connected Shared Dropdown Pane -->
+    <div class="explanation-panel" id="explanationPanel">
+        <div class="explanation-content">
+            <h3 id="panelTitle">Slot Details</h3>
+            <div class="explanation-text" id="panelText">Placeholder</div>
+        </div>
+    </div>
+
+    <script>
+        const chartData = [
+            { index: "-3", name: "Preverb", description: `
+            <p>Preverbs are present in all except for the <strong>Present series</strong>. They are only present in the Present series if it is a verb of motion or if it serves a lexical function, in which case the forms are identical to the Future series.</p>
+            <p>While preverbs have predefined definitions, they don't always match them and are usually individual to the verb being used. They are usually present in the <strong>მასდარი</strong> (the infinitive), so knowing it means you know the preverb.</p>
+            <table style="width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">Preverb</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">General Meaning</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>მი-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">Away from the speaker</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>მო-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">Towards the speaker</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>ა-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">Up</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>და-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">Down (most common preverb, default to this or გა- if unsure)</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>ჩა-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">Down inside</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>შე-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">From outside to inside</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>გა-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">From inside to outside</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>გადა-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">Over</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>წა-</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">Away from the speaker</td></tr>
+              </tbody>
+            </table>
+            <p style="background: #f8fafc; padding: 12px; border-left: 4px solid #c93b2b; margin-top: 15px;">
+              <strong>Directional Rule:</strong> All preverbs other than <em>მი-</em>, <em>მო-</em>, and <em>და-</em> can be combined with <strong>-მო</strong> to indicate motion towards the speaker (e.g., გადა- + მო- = გადმო-).
+            </p>
+        ` },
+            { index: "-2", name: "Person marker", description: `
+            <p>This slot is the primary marker of Georgian's legendary <strong>polypersonal agreement</strong>, where one verb can simultaneously indicate the subject, the direct object, and the indirect object.</p>
+            
+            <p>Georgian makes use of two distinct personal marker sets: the <strong>ვ-set</strong> and the <strong>მ-set</strong>. The former typically shows the subject, while the latter shows the object (both direct and indirect).</p>
+            
+            <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #c93b2b; margin: 15px 0;">
+                <strong>The Conflict Hierarchy:</strong> Both sets cannot coexist simultaneously in this prefix slot. Instead, a strict linguistic hierarchy must be followed: 
+                <span style="color: #c93b2b; font-weight: bold;">მ-set &gt; ვ-set</span>, and within the chosen set, 
+                <strong>1st Person &gt; 2nd Person &gt; 3rd Person</strong>.
+            </div>
+
+            <p><em>Example:</em> In the verb "I see you", the subject is "I" (ვ-set: <strong>ვ-</strong>) and the object is "you" (მ-set: <strong>გ-</strong>). Because the მ-set outranks the ვ-set, <strong>გ-</strong> wins the slot. The resulting form is <strong>გხედავ</strong>, and the subject marker is completely dropped/inferred.</p>
+
+            <h4 style="margin-top: 20px; color: #1e293b;">Personal Marker Paradigm</h4>
+            <table style="width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">Person</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">ვ-set:</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">მ-set:</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">Copula:</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>1s</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">ვ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">მ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">ვარ</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>2s</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">გ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">ხარ</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>3s</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ს (slot 7)</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">ა (series 3) / ს (type 4 verbs)</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>1p</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">ვ-თ (slot 8)</td><td style="padding: 8px; border: 1px solid #cbd5e1;">გვ-თ (slot 8)</td><td style="padding: 8px; border: 1px solid #cbd5e1;">ვართ</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>2p</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-თ (slot 8)</td><td style="padding: 8px; border: 1px solid #cbd5e1;">გ-თ (slot 8)</td><td style="padding: 8px; border: 1px solid #cbd5e1;">ხართ</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>3p</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ნენ/ნ (slot 7)</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">ა (series 3) / ს (type 4 verbs)</td></tr>
+              </tbody>
+            </table>
+
+            <h4 style="margin-top: 20px; color: #1e293b;">The 3rd Person Indirect Object Rule (ჰ-/ს- Marker)</h4>
+            <p>If the indirect object is in the 3rd person, a special prefix marker is applied depending strictly on phonetic environments:</p>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li>Use <strong style="color: #c93b2b;">ს-</strong> if the next letter is: <strong>დ, თ, ტ, ძ, ც, წ, ჯ, ჩ,</strong> or <strong>ჭ</strong></li>
+                <li>Use <strong style="color: #c93b2b;">ჰ-</strong> if the next letter is: <strong>გ, კ, ქ, ყ, ხ,</strong> or <strong>ღ</strong></li>
+                <li><strong>Omit completely</strong> if the root starts with a vowel or any other consonant.</li>
+            </ul>
+
+            <h4 style="margin-top: 20px; color: #1e293b;">Inversion Mechanics &amp; Ambiguity</h4>
+            <p>In <strong>Series 3</strong> of Type 1 and 3 verbs, as well as across all <strong>Type 4 verbs</strong>, grammatical inversion occurs. The logical object is pushed into the ვ-set structure, and the appropriate enclitic copula is appended to the absolute end of the verb matrix to mark that entity.</p>
+            
+            <p>Crucially, because the 1st and 2nd persons outrank the 3rd person across both paradigms, an მ-set 3rd-person argument will always be overwritten by a ვ-set non-3rd-person marker. Because of this structural flattening, subject/object references can be completely ambiguous, forcing Georgian speakers to explicitly supply independent pronouns (მე, შენ, მას...) to clarify syntactic participants.</p>
+        ` },
+            { index: "-1", name: "Versioner", description: `
+            <p>While the versioner is traditionally described as indicating who benefits from a verbal action, it serves far more diverse grammatical purposes in practice. The versioner slot can be filled by <strong>any vowel other than ო</strong>.</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b;">Vowel Versioner Paradigm</h4>
+            <table style="width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                  <th style="padding: 10px; border: 1px solid #cbd5e1; width: 10%;">Vowel</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1; width: 45%;">Basic Usage</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1; width: 45%;">Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;"><strong style="font-size: 1.2rem; color: #c93b2b;">ა</strong></td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;">Locative action, causative formation</td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>აწერს</strong> (writes onto something), <strong>აშენებს</strong> (builds)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;"><strong style="font-size: 1.2rem; color: #c93b2b;">ე</strong></td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;">Indirect non-beneficiary, pluperfect screeve, perfect subjunctive screeve</td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>ველაპარაკობ</strong> (I speak to him), <strong>ამეშენებინა</strong> (I had built it)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;"><strong style="font-size: 1.2rem; color: #c93b2b;">ი</strong></td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;">Subjective (action for oneself) verbs, perfect screeve 1st/2nd person, passive &amp; preverb substitute for type 3 verbs</td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>მინდა</strong> (I want), <strong>აგიშენებია</strong> (It seems you have built it), <strong>იჭმება</strong> (it is eaten)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;"><strong style="font-size: 1.2rem; color: #c93b2b;">უ</strong></td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;">Objective (action for a 3rd party), perfect screeve 3rd person</td>
+                  <td style="padding: 10px; border: 1px solid #cbd5e1;"><strong>უნდა</strong> (he wants)</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p style="background: #f8fafc; padding: 12px; border-left: 4px solid #c93b2b; margin-top: 15px;">
+              <strong>Phonotactic Constraint:</strong> When used alongside the object prefixes <strong>გვ-</strong> and <strong>გ-</strong>, the vowel <strong>უ</strong> cannot be utilized as a versioner marker.
+            </p>
+        ` },
+            { index: "0",  name: "Verb Root", description: `
+            <p>The verb root is simultaneously the most straightforward and the most structurally irregular segment of the Georgian verb system. It carries the primary semantic meaning of the word, such as <strong>-ჭამ-</strong> ("to eat") or <strong>-შენ-</strong> ("to build").</p>
+            
+            <p>The complexity of this slot arises from <strong>suppletion</strong>—where the core root shape shifts completely depending either on the grammatical screeve (tense) or the plurality of the subject argument. While not all verbs are suppletive, those that are tend to be highly unpredictable and require outright memorization.</p>
+            
+            <p>Additionally, rare instances of <strong>ablaut and syncope</strong> occur, where root-internal epenthetic vowels are dynamically inserted or dropped depending on screeve structures or participle formation.</p>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Screeve-Based Suppletive Paradigm</h4>
+            <table style="width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; font-size: 0.95rem;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">Meaning</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">Present Stem</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">Future Stem</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1;">Aorist/Perfect Stem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to say/tell</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ამბ-ობ-</td><td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; color: #94a3b8;">—</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-თქვ-</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to be doing</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-შვრ-ებ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">ი-ზენ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ქენ- (1&amp;2) / -ქნ-</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to give</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-აძლ-ევ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">მი/მო-ცემ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">მი/მო-ც-</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to see</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ხედ-ავ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">და-ნახ-(ავ)</td><td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; color: #94a3b8;">—</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to have (animate)</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ყ-ავ-</td><td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; color: #94a3b8;">—</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ყ-ოლ-</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to have (inanimate)</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-აქვ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ქნ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ქონ-</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to go</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-დი-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ვალ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ვიდ- / -ვედ- (pl.) / -სულ- (perf.)</td></tr>
+              </tbody>
+            </table>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Number-Based Suppletive Paradigm</h4>
+            <table style="width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; font-size: 0.95rem;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                  <th style="padding: 10px; border: 1px solid #cbd5e1; width: 40%;">Meaning</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1; width: 30%;">Singular Stem</th>
+                  <th style="padding: 10px; border: 1px solid #cbd5e1; width: 30%;">Plural Stem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to sit</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ჯდ-ებ / -ზ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-სხდ-</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to fall</strong></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ვარდ-ებ-</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ცვივ-</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #cbd5e1;"><strong>to throw</strong> <span style="font-size:0.8rem; color:#64748b;">(triggered by Object number)</span></td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ა-გდ-ებ</td><td style="padding: 8px; border: 1px solid #cbd5e1;">-ყრ-</td></tr>
+              </tbody>
+            </table>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Ablaut / Syncope Phonological Rules</h4>
+            <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #475569; margin-bottom: 10px;">
+                <strong>Vowel Insertion (Ablaut):</strong> If a root is entirely consonantal and finishes with <strong>-დ</strong> or <strong>-ლ</strong>, it will generally develop an epenthetic <strong>-ა-</strong> insertion inside its penult (second-to-last) slot during 1st and 2nd person Aorist shifts.
+            </div>
+            <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #475569;">
+                <strong>Vowel Deletion (Syncope):</strong> If a verb root has a base vowel of <strong>ა, ე,</strong> or <strong>ო</strong>, and terminates in the sonorant consonants <strong>ნ, მ, რ,</strong> or <strong>ლ</strong>, that vowel undergoes structural syncope (deletion) whenever a derivational suffix starting with a vowel is appended.
+            </div>
+        ` },
+            { index: "1",  name: "Passive marker", description: `
+            <p>The passive marker <strong>-დ-</strong> is highly productive in Georgian morphotactics and is primarily utilized across three distinct grammatical scenarios:</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b;">Core Morphological Scenarios</h4>
+            
+            <div style="margin-bottom: 15px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">Scenario 1: Passive Voice Alternation</strong>
+                Deriving Intransitive/Passive (Type 2) verbs from Transitive (Type 1) bases using <em>-ებ-</em> in Slot 2.
+                <div style="margin-top: 6px; font-size: 0.9rem; color: #475569; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                    <em>Example:</em> <strong>აშენებს</strong> (he builds) &rarr; <strong>შენდება</strong> (it is being built). 
+                    <span style="font-size:0.85rem; display:block; margin-top:4px; color:#64748b;">*Note: The versioner <em>-ა-</em> is dropped here; it is only preserved alongside <em>-ებ-</em> when deriving active causatives directly from underlying intransitives or adjectives.</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">Scenario 2: Deadjectival Inchoative/Process</strong>
+                Transforming a baseline stative adjective into an active, unfolding process (becoming X).
+                <div style="margin-top: 6px; font-size: 0.9rem; color: #475569; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                    <em>Example:</em> <strong>მდიდარი</strong> (rich) &rarr; <strong>მდიდრდება</strong> (he is growing rich / becoming rich).
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">Scenario 3: Denominal Essence/State</strong>
+                Converting a concrete base noun into a developmental trajectory or personal state.
+                <div style="margin-top: 6px; font-size: 0.9rem; color: #475569; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                    <em>Example:</em> <strong>კაცი</strong> (man) &rarr; <strong>კაცდება</strong> (he becomes a man / matures).
+                </div>
+            </div>
+
+            <h4 style="margin-top: 25px; color: #1e293b;">Phonotactic Deletion Rule</h4>
+            <div style="background: #fee2e2; padding: 12px; border-left: 4px solid #c93b2b; color: #991b1b; font-size: 0.95rem; border-radius: 0 4px 4px 0;">
+                <strong>Consonantal Dissimilation:</strong> The marker <strong>-დ-</strong> completely disappears on the surface when it immediately follows a verb root ending in a <strong>dental, labial, sibilant, or affricate</strong> consonant. Crucially, it undergoes structural reinstatement and <strong>reappears</strong> during 1st and 2nd person Aorist shifts.
+            </div>
+        ` },
+            { index: "2",  name: "Causative marker", description: `
+            <p>The causative marker <strong>-ინ-</strong> is used to derive active causative verbs from underlying transitive verbal foundations.</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b;">Morphotactic Structural Variants</h4>
+            
+            <div style="margin-bottom: 15px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">Standard Suffix: -ინ-</strong>
+                Appended to standard, open-structured roots to show forced, permitted, or assisted actions.
+                <div style="margin-top: 6px; font-size: 0.9rem; color: #475569; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                    <em>Example:</em> <strong>ყიდ</strong> (to buy) &rarr; <strong>აყიდინებს</strong> (he makes or helps someone buy it).
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">Heavy Suffix Alternate: -ევინ-</strong>
+                Triggered if the underlying verb root is consonant-heavy or features a syncopating internal vowel cluster.
+                <div style="margin-top: 6px; font-size: 0.9rem; color: #475569; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                    <em>Example:</em> <strong>ჭამ</strong> (to eat) &rarr; <strong>აჭმევინებს</strong> (he makes someone eat / feeds them). 
+                    <span style="font-size:0.85rem; display:block; margin-top:4px; color:#64748b;">*Note: The root vowel drops out here via structural syncope before attaching the vowel-initial suffix.</span>
+                </div>
+            </div>
+
+            <h4 style="margin-top: 25px; color: #1e293b;">Historical vs. Spoken Alternations</h4>
+            <ul style="padding-left: 20px; line-height: 1.6; margin-bottom: 20px;">
+                <li><strong>Traditional Georgian:</strong> The complex suffix <em>-ევინ-</em> systematically reduces down to a simple <strong>-ი-</strong> when shifted into the Aorist series.</li>
+                <li><strong>Modern Spoken Georgian:</strong> The full <strong>-ევინ-</strong> cluster is frequently kept completely intact during speech, bypassing the historical truncation.</li>
+            </ul>
+
+            <div style="background: #fee2e2; padding: 12px; border-left: 4px solid #c93b2b; color: #991b1b; font-size: 0.95rem; border-radius: 0 4px 4px 0;">
+                <strong>Agreement Constraint:</strong> Subject markers belonging strictly to the <strong>ვ-set</strong> are morphologically barred and not utilized alongside verbs formed using this suffix.
+            </div>
+        ` },
+            { index: "3",  name: "Thematic Suffix", description: `
+            <p>Thematic suffixes (also known as present/future stem formants) are a structurally crucial and highly diverse component of Georgian verbal morphology.</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">The Nine Thematic Suffixes</h4>
+            <ul style="list-style-type: none; padding-left: 0; line-height: 1.6;">
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ებ-</strong> &mdash; The most common and productive thematic suffix in Georgian. It is heavily utilized to form causatives and is primarily found in Type 1 and Type 2 verbs. It is dropped completely in Series 3 if no vowel is present inside the root.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ავ-</strong> &mdash; Standard thematic formant suffix.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ამ-</strong> &mdash; Non-productive marker, but found constrained within a small class of highly frequent verbs.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ემ-</strong> &mdash; A very rare, highly archaic verbal suffix.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ევ-</strong> &mdash; Alternates and systematically becomes <strong>-ი-</strong> across Series 2, as well as in Series 3 Pluperfect and Perfect Subjunctive screeves.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ობ-</strong> &mdash; Frequently used in denominal verbs (turning nouns into actions) and weather-related verbs. It is common in Type 3 verbs, and drops in Series 3 if no vowel exists in the root. In Series 1b, it mutates to <em>-ებ-</em> in Class 3 verbs and to <em>-ი-</em> in Class 1 verbs.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ინ-</strong> &mdash; Specialized thematic formant suffix.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">-ი-</strong> &mdash; Standard vocalic suffix variant that drops out entirely when entering Series 3 screeves.
+                </li>
+                <li style="margin-bottom: 12px; padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <strong style="color: #c93b2b; font-size: 1.1rem;">Ø (Zero) Suffix</strong> &mdash; Roots lacking an overt thematic suffix are also highly common across the paradigm.
+                </li>
+            </ul>
+
+            <h4 style="margin-top: 25px; color: #1e293b;">Additional Morphotactic Disruption Rules</h4>
+            <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #475569;">
+                <strong>Screeve Alternation Behavior:</strong> Preverbs traditionally drop out across Series 2 environments except where explicitly specified by unique lexical sub-conditions.
+            </div>
+        ` },
+            { index: "4",  name: "Imperfective marker", description: `
+            <p>The Imperfect marker is systematically employed across the <strong>Imperfect, Present Subjunctive, Conditional, and Future Subjunctive</strong> screeves. It alternates between two primary surface forms: <strong>-დ-</strong> or <strong>-ოდ-</strong>.</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b;">Distribution by Verb Type</h4>
+            
+            <div style="display: flex; gap: 15px; margin: 15px 0;">
+                <div style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; border-top: 4px solid #c93b2b;">
+                    <strong style="color: #c93b2b; display: block; margin-bottom: 4px; font-size: 1.1rem;">-დ- Form</strong>
+                    Exclusively used across:
+                    <ul style="padding-left: 20px; margin-top: 6px; margin-bottom: 0;">
+                        <li><strong>Type 1</strong> (Transitive) verbs</li>
+                        <li><strong>Type 3</strong> (Medial) verbs</li>
+                        <li><strong>Type 4</strong> (Inverted) verbs</li>
+                    </ul>
+                </div>
+                
+                <div style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; border-top: 4px solid #475569;">
+                    <strong style="color: #475569; display: block; margin-bottom: 4px; font-size: 1.1rem;">-ოდ- Form</strong>
+                    Exclusively used across:
+                    <ul style="padding-left: 20px; margin-top: 6px; margin-bottom: 0;">
+                        <li><strong>Type 2</strong> (Intransitive) verbs</li>
+                    </ul>
+                </div>
+            </div>
+        ` },
+            { index: "5",  name: "Mood/Tense Marker", description: `
+            <p>This slot houses the core vowel markers that systematically shift to dictate the grammatical aspect, series, or modality of the Georgian verbal paradigm.</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Series 1 Distribution</h4>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li><strong>Imperfect / Conditional Screeves:</strong> Uses <strong>ი</strong> for 1st &amp; 2nd person, and <strong>ა</strong> for 3rd person singular (the standard <em>-ს</em> suffix is completely omitted).</li>
+                <li><strong>Present Subjunctive / Future Subjunctive Screeves:</strong> Employs <strong>ე</strong> across all persons except the 3rd person plural.</li>
+                <li><strong>Type 2 (Intransitive) Verbs:</strong> Inherit and utilize standard Imperfect screeve markers directly inside the Present screeve.</li>
+            </ul>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Series 2 Distribution</h4>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li><strong>Aorist Screeve:</strong> Uses <strong>ე</strong> for 1st &amp; 2nd person, and <strong>ა</strong> for 3rd singular (bypasses <em>-ს</em> suffixing). The 3rd plural triggers the unique morpheme <strong>-ეს</strong>.</li>
+                <li><strong>Optative Screeve:</strong> Employs <strong>ო</strong> uniformly across all persons, and the 3rd singular actively recovers standard <strong>-ს</strong> marking.</li>
+                <li><strong>Archaic/Rare Roots (e.g., -ღ-):</strong> Displace normal alignment to adopt <strong>ო</strong> in the 3rd singular Aorist instead.</li>
+                <li><strong>Weak/Other Rare Formations:</strong> Adopt <strong>ი</strong> as the 1st &amp; 2nd person aorist markers, which systematically forces the corresponding Optative marker to shift to <strong>ა</strong>.</li>
+            </ul>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Series 3 Distribution</h4>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li><strong>Perfect Screeve:</strong> Appends <strong>-ს</strong> if the underlying Thematic Suffix (TS) is <em>-ავ-</em> or <em>-ამ-</em>. Other TS variants (or their baseline absence) resolve to <strong>-ია</strong>.</li>
+                <li><strong>Pluperfect Screeve:</strong> Extracts the base aorist, TS-less stem (excepting active causative <em>ა-ებ</em> structures, which remain entirely intact) and appends <strong>-ა</strong>. If a causative <em>ა-ებ</em> formation is present, the specific cluster <strong>-ებინა</strong> is deployed instead. When identifying a 1st or 2nd personal object argument under structural inversion, <strong>ე</strong> replaces the standard <strong>ა</strong>.
+                    <div style="font-size: 0.9rem; color: #475569; background: #f8fafc; padding: 6px 10px; border-radius: 4px; margin-top: 6px;">
+                        <em>Regular Chains:</em> თამაშობს &rarr; ითამაშე &rarr; <strong>ეთამაშა</strong><br>
+                        <em>Causative Chains:</em> აშენებს &rarr; ააშენა &rarr; <strong>აეშენებინა</strong>
+                    </div>
+                </li>
+                <li><strong>Perfect Subjunctive Screeve:</strong> Structurally overwrites the existing pluperfect ending markers with the respective Optative set tailored to that verb type.</li>
+            </ul>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Morphological Paradigm Inversions &amp; Exceptions</h4>
+            <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #475569; margin-bottom: 10px; font-size: 0.95rem;">
+                <strong>Type 4 Inverted Verbs:</strong> For entries lacking native Series 2 iterations, they default to using the TS <strong>ებ</strong> followed immediately by <strong>ია</strong>. They incorporate <strong>ოდ</strong> to frame the Pluperfect and Perfect Subjunctive (utilizing Imperfect and Present Subjunctive marker sets respectively).
+                <div style="font-size: 0.9rem; color: #c93b2b; margin-top: 5px; font-family: monospace; font-weight: bold;">
+                    სძულს &rarr; სძულებია &rarr; სძულებოდა &rarr; სძულებოდეს
+                </div>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #475569; font-size: 0.95rem;">
+                <strong>Vocalic Transmission Rule:</strong> Verbs selecting an irregular <strong>-ო</strong> vowel inside the 3rd person past obligatorily pass this specific behavior directly into their Pluperfect and Perfect Subjunctive conjugations.
+                <div style="font-size: 0.9rem; color: #c93b2b; margin-top: 5px; font-family: monospace; font-weight: bold;">
+                    აიღო &rarr; აეღო &rarr; აეღოს
+                </div>
+            </div>
+        ` },
+            { index: "6",  name: "Auxiliary", description: `
+            <p>Auxiliary verbs are strictly utilized to construct the <strong>Series 3 screeves of Type 2 (Intransitive) verbs</strong> by appending them directly to the verb's underlying participle base. Their values shift systematically based on the target aspectual layer:</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Auxiliary Copula Tense Mapping</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 15px 0;">
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                    <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">In the Perfect Screeve</strong>
+                    Identical to the modern present-tense copulas described in the <strong>Slot -2</strong> paradigm (e.g., ვარ, ხარ, ვართ...).
+                </div>
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                    <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">In the Pluperfect Screeve</strong>
+                    Swaps out for the historically conjugated <strong>Imperfect copula set</strong>.
+                </div>
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                    <strong style="color: #c93b2b; display: block; margin-bottom: 4px;">In the Perfect Subjunctive</strong>
+                    Swaps out for the corresponding <strong>Present Subjunctive copula set</strong>.
+                </div>
+            </div>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Morphological Rules for Passive Participle Formation</h4>
+            <p>To establish the required base stem before adding the auxiliary values above, the <strong>passive participle</strong> must be built using specialized suffixes or circumfixes based on the underlying Thematic Suffix (TS):</p>
+            
+            <ul style="list-style-type: none; padding-left: 0; line-height: 1.6;">
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #475569;">
+                    <strong>If TS is -ებ- or -ობ-:</strong> Apply the suffix <strong style="color: #c93b2b;">-ულ-</strong>.
+                </li>
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #475569;">
+                    <strong>If TS is -ავ-:</strong> Apply <strong style="color: #c93b2b;">-ულ-</strong>, provided the internal root vowel remains stable and unchanging throughout the general conjugation.
+                </li>
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #475569;">
+                    <strong>If TS is -ამ-:</strong> Apply <strong style="color: #c93b2b;">-ულ-</strong> and completely drop the vocalic <em>ა</em> from the suffix marker.
+                </li>
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #475569;">
+                    <strong>If TS is -ევ-:</strong> Apply <strong style="color: #c93b2b;">-ულ-</strong> and structurally drop the labial glide <em>ვ</em>.
+                </li>
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #c93b2b;">
+                    <strong>Type 2 Verbs (with NO Type 1 counterpart):</strong> Encase with the circumfix <strong style="color: #c93b2b;">მ-...-არ</strong>. However, if the root itself naturally contains the liquid consonant <strong>რ</strong>, use the dissimilated variant <strong style="color: #c93b2b;">მ-...-ალ</strong> instead. 
+                    <span style="display: block; font-size: 0.85rem; color: #64748b; margin-top: 4px;">*Note: This circumfix fully eliminates any active present thematic suffixes from the stem.</span>
+                </li>
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #c93b2b;">
+                    <strong>All Other Environments:</strong> Default systematically to appending the suffix <strong style="color: #c93b2b;">-ილ-</strong>.
+                </li>
+            </ul>
+        ` },
+            { index: "7",  name: "Personal Circumfix", description: `
+            <p>The personal suffix (frequently interacting with the prefix block to form a split circumfixial agreement paradigm) is strictly deployed across two structural scenarios:</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Core Syntactic Scenarios</h4>
+            <ol style="padding-left: 20px; line-height: 1.6;">
+                <li>When the grammatical subject of an <strong>uninverted</strong> verb is in the <strong>3rd person</strong>.</li>
+                <li>When the logical subject of an <strong>inverted</strong> verb is <strong>NOT in the 3rd person</strong>.</li>
+            </ol>
+            
+            <p><em>Note:</em> The absolute surface mappings for these endings align directly with the parameters mapped out in the <strong>Slot -2 (Person marker)</strong> paradigm matrix.</p>
+
+            <div style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin: 15px 0; font-size: 0.95rem;">
+                <strong>Examples:</strong><br>
+                • <strong>წერ-ს</strong> / <strong>წერ-ენ</strong> (he writes / they write) &mdash; <em>Uninverted 3rd Person Subject</em><br>
+                • <strong>მიყვარ-ხარ</strong> (I love you [sg.]) &mdash; <em>Inverted Non-3rd Person Subject</em>
+            </div>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Morphophonemic Rules for the 3rd Person Plural</h4>
+            <p>While the standard baseline morpheme for the 3rd person plural is natively <strong style="color: #c93b2b;">-ენ</strong>, it undergoes mandatory morphotactic transformations depending on its immediate phonological or structural environment:</p>
+            
+            <ul style="list-style-type: none; padding-left: 0; line-height: 1.6;">
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #c93b2b;">
+                    <strong>Vocalic Truncation:</strong> Mutates entirely into <strong style="color: #c93b2b;">-ნ</strong> if it immediately follows a vowel.
+                </li>
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #c93b2b;">
+                    <strong>Imperfective Context:</strong> Lengthens and shifts to <strong style="color: #c93b2b;">-ნენ</strong> whenever it immediately follows an active imperfective marker.
+                </li>
+                <li style="margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; border-left: 4px solid #c93b2b;">
+                    <strong>Vocalic / Participle Context:</strong> Shifts to <strong style="color: #c93b2b;">-ან</strong> if it follows a structural <em>-ი-</em> or functions alongside a baseline participle inside Type 2 verb Perfect tense structures.
+                </li>
+            </ul>
+        ` },
+            { index: "8",  name: "Plural Marker", description: `
+            <p>The ultimate suffix position in the Georgian verbal matrix houses the universal pluralizer morpheme <strong>-თ</strong>. It is dynamically deployed whenever a plural argument condition is satisfied under the paradigm guidelines mapped out back in the <strong>Slot -2</strong> matrix.</p>
+            
+            <h4 style="margin-top: 20px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Morphotactic Dominance &amp; Override Rules</h4>
+            
+            <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #c93b2b; margin: 15px 0; font-size: 0.95rem;">
+                <strong>Prefix Set Independence:</strong> The execution of the plural marker is completely uncoupled from the prefix selection process. It does not matter whether the <em>ვ-set</em> or the <em>მ-set</em> wins the prefix slot via the hierarchy; if plurality is required by either argument, <strong>-თ</strong> is actively triggered.
+            </div>
+
+            <div style="background: #fee2e2; padding: 12px; border-left: 4px solid #c93b2b; color: #991b1b; margin: 15px 0; font-size: 0.95rem; border-radius: 0 4px 4px 0;">
+                <strong>Syntactic Flattening:</strong> Crucially, if a plural <strong>მ-set</strong> argument forces the introduction of <strong>-თ</strong>, this marker completely overrides and suppresses any co-occurring 3rd person subject markers (like <em>-ს</em> or <em>-ენ</em>) because those suffix markers strictly belong to the outranked <em>ვ-set</em> framework.
+            </div>
+
+            <h4 style="margin-top: 25px; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Type 4 (Inverted) Verb Constraints</h4>
+            <p>When operating within inverted Type 4 lexical structures, pluralization rules undergo a highly specialized divergence:</p>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li><strong>1st Person Plural:</strong> The <em>-თ</em> suffix is morphologically barred and <strong>not used</strong>.</li>
+                <li><strong>3rd Person Plural:</strong> The <em>-თ</em> suffix undergoes standard application and is <strong>fully preserved</strong>.</li>
+            </ul>
+        ` }
+        ];
+
+        const chartElement = document.getElementById('slotsChart');
+        const panel = document.getElementById('explanationPanel');
+        const panelTitle = document.getElementById('panelTitle');
+        const panelText = document.getElementById('panelText');
+
+        let currentActiveColumn = null;
+
+        chartData.forEach(slot => {
+            const column = document.createElement('div');
+            column.className = 'slot-column';
+            
+            column.innerHTML = `
+                <div class="slot-index">${slot.index}</div>
+                <div class="slot-name">${slot.name}</div>
+            `;
+
+            column.addEventListener('click', () => {
+                if (currentActiveColumn === column) {
+                    column.classList.remove('active');
+                    panel.classList.remove('open');
+                    panel.style.maxHeight = null;
+                    currentActiveColumn = null;
+                } else {
+                    if (currentActiveColumn) {
+                        currentActiveColumn.classList.remove('active');
+                    }
+
+                    column.classList.add('active');
+                    currentActiveColumn = column;
+
+                    panelTitle.textContent = `Slot ${slot.index}: ${slot.name}`;
+                    panelText.innerHTML = slot.description; // Your rule text goes here
+
+                    panel.classList.add('open');
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+
+            chartElement.appendChild(column);
+        });
+    </script>
+
+</body>
+</html>
