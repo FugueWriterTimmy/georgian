@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Georgian - Nouns</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 20px; color: #334155; max-width: 800px; margin: 0 auto; }
+        h1 { color: #dc2626; font-size: 1.8rem; text-align: center; }
+        .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        h2 { font-size: 1.1rem; margin-top: 0; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+        th { background: #f8fafc; }
+        .suffix { font-family: monospace; color: #2563eb; background: #eff6ff; padding: 1px 4px; border-radius: 4px; }
+        .alert { background: #fff5f5; border-left: 4px solid #dc2626; padding: 12px; border-radius: 4px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <h1><span>🇬🇪</span> ქართული რიცხვები <span>🇬🇪</span></h1>
+    	<p>Georgian nouns are relatively simple and can be explained in three points:</p>
+
+    <!-- 1. NOUN CLASSES -->
+    <div class="card">
+        <h2>1. The Three Noun Classes</h2>
+        <table>
+            <tr><th>Class</th><th>Ending</th><th>Behavior</th><th>Example (Nom)</th></tr>
+            <tr><td><b>1. Consonant</b></td><td><span class="suffix">-i</span></td><td>Drops case marker <span class="suffix">-i</span> in stem lookup</td><td>კაც<b>ი</b> (kaci - man)</td></tr>
+            <tr><td><b>2. Truncating</b></td><td><span class="suffix">-a</span> / <span class="suffix">-e</span></td><td>Stem vowel drops in Genitive & Instrumental</td><td>დედ<b>ა</b> (deda - mother)</td></tr>
+            <tr><td><b>3. Stable</b></td><td><span class="suffix">-o</span> / <span class="suffix">-u</span></td><td>Stem vowel never drops</td><td>წყარ<b>ო</b> (tsqaro - spring)</td></tr>
+        </table>
+    </div>
+
+    <!-- 2. DECLENSION MATRIX -->
+    <div class="card">
+        <h2>2. Case Declension Matrix (Singular)</h2>
+        <table>
+            <tr><th>Case</th><th>Consonant (კაცი)</th><th>A-Stem (დედა)</th><th>O-Stem (წყარო)</th></tr>
+            <tr><td><b>Nominative</b></td><td>კაც<b>-ი</b></td><td>დედა</td><td>წყარო</td></tr>
+            <tr><td><b>Ergative</b></td><td>კაც<b>-მა</b></td><td>დედა<b>-მ</b></td><td>წყარო<b>-მ</b></td></tr>
+            <tr><td><b>Dative</b></td><td>კაც<b>-ს</b></td><td>დედა<b>-ს</b></td><td>წყარო<b>-ს</b></td></tr>
+            <tr><td><b>Genitive</b></td><td>კაც<b>-ის</b></td><td>დედ<b>-ის</b></td><td>წყარო<b>-ს</b></td></tr>
+            <tr><td><b>Instrumental</b></td><td>კაც<b>-ით</b></td><td>დედ<b>-ით</b></td><td>წყარო<b>-თი</b></td></tr>
+            <tr><td><b>Adverbial</b></td><td>კაც<b>-ად</b></td><td>დედა<b>-დ</b></td><td>წყარო<b>-დ</b></td></tr>
+            <tr><td><b>Vocative</b></td><td>კაც<b>-ო</b></td><td>დედა<b>-ვ</b></td><td>წყარო<b>-ვ</b></td></tr>
+        </table>
+    </div>
+
+    <!-- 3. PLURALS & SYNCOPE -->
+    <div class="card">
+        <h2>3. Plural Formation & Syncope</h2>
+        <p style="font-size:0.85rem; margin:0 0 10px 0;">Plurals insert <span class="suffix">-eb-</span> before case endings. Class 2 drops the final vowel (დედა → დედები).</p>
+        <div class="alert">
+            <b>The A/E Syncope Rule:</b> If a word ends in a sonorant consonant (<b>ლ, მ, ნ, რ</b>), the internal syllable vowel <b>ა</b> or <b>ე</b> is squeezed out completely when adding <span class="suffix">-eb-</span> if the resulting consonant cluster does not exceed two.
+        </div>
+        <table>
+            <tr><th>Singular</th><th>Plural</th><th>What Happened</th></tr>
+            <tr><td>წერი<b>ლ</b>ი (letter)</td><td>წერ<b>ლ</b>ები (tserlebi)</td><td>Internal <b>ი</b> dropped before sonorant <b>ლ</b></td></tr>
+            <tr><td>ფანჯ<b>ა</b><b>რ</b>ა (window)</td><td>ფანჯ<b>რ</b>ები (panjrebi)</td><td>Internal <b>ა</b> dropped before sonorant <b>რ</b></td></tr>
+        </table>
+    </div>
+
+</body>
+</html>
