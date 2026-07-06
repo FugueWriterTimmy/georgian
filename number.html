@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Georgian Numbers</title>
+    <style>
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: #fff; color: #334155; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { max-width: 800px; text-align: center; padding: 40px 20px; width: 100%; box-sizing: border-box; }
+        h1 { font-size: 2.2rem; color: #dc2626; margin-bottom: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .subtitle { font-size: 0.95rem; color: #64748b; margin-bottom: 48px; }
+        .converter-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); text-align: left; width: 100%; box-sizing: border-box; }
+        .converter-title { font-size: 1.2rem; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; }
+        label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+        input { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1.2rem; color: #0f172a; box-sizing: border-box; }
+        input:focus { outline: none; border-color: #cbd5e1; background: #f8fafc; }
+        .output-card { margin-top: 24px; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
+        .geo-text { font-size: 1.6rem; font-weight: 700; color: #dc2626; line-height: 1.4; }
+        .placeholder-text { color: #94a3b8; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><span>🇬🇪</span> ქართული რიცხვები <span>🇬🇪</span></h1>
+        <p class="subtitle">Enter any numeric value below to convert it into the correct spoken Georgian word format.</p>
+
+        <div class="converter-section">
+            <h2 class="converter-title">Number-to-Word Converter</h2>
+            <div class="input-group">
+                <label for="numInput">Enter Digits (Up to Billions)</label>
+                <input type="text" id="numInput" placeholder="e.g., 20, 40, 2012, 1000000" maxlength="15">
+            </div>
+            
+            <div class="output-card">
+                <div id="output" class="placeholder-text">Enter a number to see its Georgian translation...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ones = ["ნული", "ერთი", "ორი", "სამი", "ოთხი", "ხუთი", "ექვსი", "შვიდი", "რვა", "ცხრა", "ათი", "თერთმეტი", "თორმეტი", "ცამეტი", "თოთხმეტი", "თხუთმეტი", "თექვსმეტი", "ჩვიდმეტი", "თვრამეტი", "ცხრამეტი"];
+        const scores = ["", "ოცი", "ორმოცი", "სამოცი", "ოთხმოცი"];
+
+        function convertUnder100(n, isLast) {
+            if (n === 0) return "";
+            if (n < 20) return isLast ? ones[n] : ones[n].slice(0, -1);
+
+            let scoreIdx = Math.floor(n / 20);
+            let remainder = n % 20;
+            let scoreWord = scores[scoreIdx];
+
+            if (remainder === 0) {
+                return isLast ? scoreWord : scoreWord.slice(0, -1);
+            } else {
+                return scoreWord.slice(0, -1) + "და" + (isLast ? ones[remainder] : ones[remainder].slice(0, -1));
+            }
+        }
+
+        function convertChunk(n, isLast) {
+            if (n === 0) return "";
+            let res = "";
+            let hundreds = Math.floor(n / 100);
+            let rem = n % 100;
+
+            if (hundreds > 0) {
+                if (hundreds === 1) res += "ასი";
+                else if (hundreds === 8 || hundreds === 9) res += ones[hundreds] + "ასი";
+                else res += ones[hundreds].slice(0, -1) + "ასი";
+                
+                if (rem > 0) res = res.slice(0, -1) + " ";
+            }
+            
+            res += convertUnder100(rem, isLast);
+            return res;
+        }
+
+        function numberToGeorgian(str) {
+            str = str.replace(/^0+/, "");
+            if (!str) return ones[0];
+            
+            let chunks = [];
+            let tempStr = str;
+            while (tempStr.length > 0) {
+                let len = Math.min(3, tempStr.length);
+                chunks.unshift(parseInt(tempStr.slice(-len)));
+                tempStr = tempStr.slice(0, -len);
+            }
+
+            const scales = ["", "ათასი", "მილიონი", "მილიარდი"];
+            let words = [];
+            let numChunks = chunks.length;
+
+            for (let i = 0; i < numChunks; i++) {
+                let val = chunks[i];
+                if (val === 0) continue;
+
+                let scaleIdx = numChunks - 1 - i;
+                
+                let isLastModifier = true;
+                for (let j = i + 1; j < numChunks; j++) {
+                    if (chunks[j] > 0) { isLastModifier = false; break; }
+                }
+
+                if (scaleIdx === 1 && val === 1) {
+                    words.push(isLastModifier ? "ათასი" : "ათას");
+                } else {
+                    let chunkText = convertChunk(val, true); 
+                    
+                    if (scaleIdx > 0) {
+                        let scaleName = scales[scaleIdx];
+                        if (scaleIdx === 1 && !isLastModifier) { scaleName = "ათას"; }
+                        words.push(chunkText + " " + scaleName);
+                    } else {
+                        words.push(convertChunk(val, isLastModifier));
+                    }
+                }
+            }
+
+            return words.join(" ").trim();
+        }
+
+        const numInput = document.getElementById('numInput');
+        const output = document.getElementById('output');
+
+        numInput.oninput = () => {
+            let cleanVal = numInput.value.replace(/[^0-9]/g, '');
+            numInput.value = cleanVal;
+
+            if (!cleanVal) {
+                output.innerHTML = "Enter a number to see its Georgian translation...";
+                output.className = "placeholder-text";
+                return;
+            }
+
+            if (cleanVal.length > 12) {
+                output.innerHTML = "Number too large!";
+                output.className = "placeholder-text";
+                return;
+            }
+
+            output.innerHTML = `<div class="geo-text">${numberToGeorgian(cleanVal)}</div>`;
+            output.className = "";
+        };
+    </script>
+</body>
+</html>
