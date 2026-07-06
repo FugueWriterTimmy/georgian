@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Georgian - Alphabet</title>
+    <style>
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: #fff; color: #334155; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { max-width: 1000px; text-align: center; padding: 40px 20px; }
+        h1 { font-size: 2.2rem; color: #dc2626; margin-bottom: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .subtitle { font-size: 0.95rem; color: #64748b; margin-bottom: 48px; }
+        .alphabet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; width: 100%; margin-bottom: 60px; }
+        .letter-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: all 0.2s ease-in-out; }
+        .letter-card:hover { transform: translateY(-3px); border-color: #cbd5e1; box-shadow: 0 6px 16px rgba(0,0,0,0.06); background: #f8fafc; }
+        .letter-main { font-size: 2.5rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; transition: color 0.2s; }
+        .letter-card:hover .letter-main { color: #dc2626; }
+        .letter-name { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; }
+        .letter-sound { font-size: 0.9rem; font-weight: 600; color: #475569; }
+        .converter-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); text-align: left; width: 100%; box-sizing: border-box; }
+        .converter-title { font-size: 1.2rem; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
+        .io-container { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px; }
+        .textarea-group { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 6px; }
+        textarea { width: 100%; height: 100px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 1.1rem; resize: none; box-sizing: border-box; }
+        textarea:focus { outline: none; border-color: #cbd5e1; background: #f8fafc; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><span>🇬🇪</span> ქართული ანბანი <span>🇬🇪</span></h1>
+        <p class="subtitle">Hover over cards to see letters. Type in the boxes below to convert scripts.</p>
+
+        <div class="alphabet-grid" id="grid"></div>
+
+        <div class="converter-section">
+            <h2 class="converter-title">Latin ⇆ Georgian Script Transliterating Tool</h2>
+            <p style="font-size:0.85rem; color:#64748b; margin:0;">Supports ejectives via typing apostrophes (t', k', p') or standard capital keys (T, K, P, W, C, Q).</p>
+            <div class="io-container">
+                <div class="textarea-group">
+                    <label>Type Latin Here:</label>
+                    <textarea id="latinInput" placeholder="Type Latin letters here..."></textarea>
+                </div>
+                <div class="textarea-group">
+                    <label>Type Georgian Here:</label>
+                    <textarea id="georgianOutput" placeholder="Conversion appears here..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Core data array: [Georgian, Name, Sound]
+    const data = [
+        ['ა','An','a'],['ბ','Ban','b'],['გ','Gan','g'],['დ','Don','d'],['ე','En','e'],['ვ','Vin','v'],['ზ','Zen','z'],['თ','Tan','t'],['ი','In','i'],['კ','K\'an','k\''],['ლ','Las','l'],['მ','Man','m'],['ნ','Nar','n'],['ო','On','o'],['პ','P\'an','p\''],['ჟ','Zhan','zh'],['რ','Rae','r'],['ს','San','s'],['ტ','T\'an','t\''],['უ','Un','u'],['ფ','Par','p'],['ქ','Kar','k'],['ღ','Ghan','gh'],['ყ','Q\'ar','q\''],['შ','Shin','sh'],['ჩ','Chin','ch'],['ც','Can','ts'],['ძ','Dzil','dz'],['წ','C\'an','ts\''],['ჭ','Ch\'ar','ch\''],['ხ','Khan','kh'],['ჯ','Jan','j'],['ჰ','Hae','h']
+    ];
+
+    // 1. Generate HTML grid dynamically
+    document.getElementById('grid').innerHTML = data.map(item => `
+        <div class="letter-card">
+            <span class="letter-name">${item[1]}</span>
+            <span class="letter-main">${item[0]}</span>
+            <span class="letter-sound">${item[2]}</span>
+        </div>
+    `).join('');
+
+    // 2. Clear, separate lookup tables to prevent overwriting
+    const baseLatinToGeo = {
+        'a':'ა','b':'ბ','g':'გ','d':'დ','e':'ე','v':'ვ','z':'ზ','t':'თ','i':'ი','l':'ლ',
+        'm':'მ','n':'ნ','o':'ო','p':'ფ','k':'ქ','r':'რ','s':'ს','u':'უ','j':'ჯ','h':'ჰ'
+    };
+
+    const multiChar = {
+        "ts'": "წ", "ch'": "ჭ", "t'": "ტ", "k'": "კ", "p'": "პ", "q'": "ყ",
+        "sh": "შ", "ch": "ჩ", "ts": "ც", "dz": "ძ", "kh": "ხ", "gh": "ღ", "zh": "ჟ"
+    };
+
+    const capitalShortcuts = {
+        'T': 'ტ', 'K': 'კ', 'P': 'პ', 'W': 'წ', 'C': 'ჭ', 'Q': 'ყ', 'R': 'ღ', 'S': 'შ'
+    };
+
+    const geoToLatin = {};
+    data.forEach(item => geoToLatin[item[0]] = item[2]);
+
+    const lIn = document.getElementById('latinInput'), gOut = document.getElementById('georgianOutput');
+
+    lIn.oninput = () => {
+        let t = lIn.value, r = '', i = 0;
+        while (i < t.length) {
+            // Check 3-char blends (ts', ch')
+            if (i + 2 <= t.length && multiChar[t.substr(i, 3).toLowerCase()]) {
+                r += multiChar[t.substr(i, 3).toLowerCase()];
+                i += 3;
+            }
+            // Check 2-char blends & ejectives with apostrophes (t', k', sh)
+            else if (i + 1 < t.length && multiChar[t.substr(i, 2).toLowerCase()]) {
+                r += multiChar[t.substr(i, 2).toLowerCase()];
+                i += 2;
+            }
+            // Check Shift-key capital letter shortcuts
+            else if (capitalShortcuts[t[i]]) {
+                r += capitalShortcuts[t[i]];
+                i += 1;
+            }
+            // Check basic letters (plain t maps to თ)
+            else {
+                const lowChar = t[i].toLowerCase();
+                r += baseLatinToGeo[lowChar] || t[i];
+                i += 1;
+            }
+        }
+        gOut.value = r;
+    };
+
+    gOut.oninput = () => {
+        let t = gOut.value, r = '';
+        for (let c of t) { r += geoToLatin[c] || c; }
+        lIn.value = r;
+    };
+
+    </script>
+</body>
+</html>
