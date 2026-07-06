@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Georgian</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #dc2626;
+            margin-bottom: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .flag {
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #000000; 
+            margin-bottom: 48px;
+            font-weight: 400;
+        }
+
+        /* Clean link container */
+        .link-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Rounded rectangle links matching the chart item aesthetic */
+        .card-link {
+            min-width: 160px;
+            background-color: #ffffff;
+            color: #0f172a; /* Deep slate font color */
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 18px 24px;
+            
+            /* Clean border structure matching the reference image container */
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; /* Smooth rounded corners */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Hover animations adhering to the reference style */
+        .card-link:hover {
+            transform: translateY(-3px);
+            border-color: #cbd5e1;
+            color: #dc2626; /* Highlights text in red on hover */
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            background-color: #f8fafc; /* Subtle light gray background shift */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>
+            <span class="flag">🇬🇪</span> 
+            ისწავლეთ ქართული! 
+            <span class="flag">🇬🇪</span>
+        </h1>
+        
+        <p class="subtitle">Georgian (ქართული ენა) is a Kartvelian language spoken by almost 4 million people in Georgia, a small country in the Caucasus. Georgian has a unique, beautiful, flowing script and is renowned among linguists for rare features such as split ergativity, ejective consonants, and polypersonal agreement. This website is a set of tools and links that I either made or found useful that I hope will help you learn it. Please remember that this website is an active Work In Progress, and may therefore contain some mistakes, which I am actively working to remove.</p>
+
+        <div class="link-container">
+            <a href="/alphabet.html" class="card-link">The Alphabet</a>
+            <a href="/verb.html" class="card-link">Verb Structure</a>
+            <a href="/noun.html" class="card-link">Noun Structure</a>
+            <a href="https://peacebridge.ge/" class="card-link" target="_blank" rel="noopener">PeaceBridge Dictionary ↗</a>
+        </div>
+    </div>
+
+</body>
+</html>
